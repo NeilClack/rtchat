@@ -11,16 +11,7 @@ export const POST = async (request: Request) => {
 
     const { email: emailToAdd } = addFriendValidator.parse(body.email)
 
-    const RESTResponse = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/get/user:email${emailToAdd}`,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
-        },
-        cache: 'no-store',
-      })
-
-    const data = await RESTResponse.json() as { result: string }
-    const idToAdd = data.result
+    const idToAdd = await fetchRedis('get', `user:email:${emailToAdd}`) as string;
 
     if (!idToAdd) {
       return new Response('No such user', { status: 400 })
