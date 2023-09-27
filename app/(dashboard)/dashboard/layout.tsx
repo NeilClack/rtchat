@@ -14,8 +14,6 @@ interface LayoutProps {
 export const DashboardLayout = async ({ children }: LayoutProps) => {
   const session = await getServerSession(authOptions);
 
-  console.log(`Server session: ${JSON.stringify(session)}`);
-
   interface SidebarOption {
     id: number;
     name: string;

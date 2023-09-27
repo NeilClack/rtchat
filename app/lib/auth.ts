@@ -30,8 +30,6 @@ const authOptions: NextAuthOptions = {
 
             const dbUser = JSON.parse(dbUserResult);
             
-            console.log(`JWT funcction in auth.ts/authOptions/callbacks: ${JSON.stringify(dbUser)}`)
-
             return {
                 id: dbUser.id,
                 name: dbUser.name,
@@ -47,8 +45,6 @@ const authOptions: NextAuthOptions = {
                 session.user.name = token.name,
                 session.user.image = token.picture
             }
-
-            console.log(`Session object in auth.ts/authOptions/session: ${JSON.stringify(session)}`)
 
             return session
         },
