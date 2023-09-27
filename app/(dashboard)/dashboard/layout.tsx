@@ -6,6 +6,8 @@ import { ReactNode } from "react";
 import Image from "next/image";
 import SignOutButton from "@/app/components/UI/SignOutButton";
 import authOptions from "@/app/lib/auth";
+import FriendRequestSidebarOptions from "@/app/components/UI/FriendRequestSidebarOptions";
+import fetchRedis from "@/app/lib/Redis/redis";
 
 interface LayoutProps {
   children: ReactNode;
@@ -13,6 +15,15 @@ interface LayoutProps {
 
 export const DashboardLayout = async ({ children }: LayoutProps) => {
   const session = await getServerSession(authOptions);
+
+  if (!session) redirect("/login");
+
+  const unseenRequestCount = (
+    (await fetchRedis(
+      "smembers",
+      `user:${session.user.id}:incoming_friend_requests`
+    )) as User[]
+  ).length;
 
   interface SidebarOption {
     id: number;
@@ -29,8 +40,6 @@ export const DashboardLayout = async ({ children }: LayoutProps) => {
       Icon: "UserPlus",
     },
   ];
-
-  if (!session) redirect("/login");
 
   return (
     <div className="w-full flex h-screen">
@@ -67,6 +76,12 @@ export const DashboardLayout = async ({ children }: LayoutProps) => {
                   );
                 })}
               </ul>
+            </li>
+            <li>
+              <FriendRequestSidebarOptions
+                sessionId={session.user.id}
+                initialUnseenRequestCount={unseenRequestCount}
+              />
             </li>
             <li className="-mx-6 mt-auto flex items-center">
               <div className="flex flex-1 items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900">

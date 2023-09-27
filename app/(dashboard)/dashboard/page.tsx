@@ -6,6 +6,7 @@ const Dashboard = async ({ children }: { children: React.ReactNode }) => {
 
   return (
     <>
+      <h1 className="font-bold text-4xl">Dashboard</h1>
       <h2>{session?.user.id}</h2>
       <h1>{session?.user.email}</h1>
       <h2>{session?.user.name}</h2>
