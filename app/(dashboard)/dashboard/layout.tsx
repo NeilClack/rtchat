@@ -31,9 +31,6 @@ export const DashboardLayout = async ({ children }: LayoutProps) => {
   ];
 
   if (!session) redirect("/login");
-  if (session) {
-    console.log(`Session data: \n${session.user.email}`);
-  }
 
   return (
     <div className="w-full flex h-screen">

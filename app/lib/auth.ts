@@ -7,6 +7,9 @@ import { Adapter } from "next-auth/adapters"
 
 const authOptions: NextAuthOptions = {
     adapter: UpstashRedisAdapter(db) as Adapter,
+    session: {
+        strategy: "database",
+    },
     providers: [
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID as string,
@@ -17,33 +20,23 @@ const authOptions: NextAuthOptions = {
         signIn: "/login"
     },
     callbacks: {
-        async jwt({ token, user }){
-            const dbUserResult = (await fetchRedis('get', `user:${token.id}`)) as string | null
+        async session({ session, user }){
+
+            const dbUserResult = (await fetchRedis('get', `user:${user.id}`)) as string | null
 
             if(!dbUserResult){
-                if(user) {
-                    token.id = user!.id
+                if(user){
+                    session.user.id = user!.id
                 }
-            
-                return token
             }
-
-            const dbUser = JSON.parse(dbUserResult);
             
-            return {
-                id: dbUser.id,
-                name: dbUser.name,
-                email: dbUser.email,
-                image: dbUser.image
-            }
-        },
-        async session({ session, token }){
+            const dbUser = dbUserResult ? JSON.parse(dbUserResult) : null
             
-            if(token) {
-                session.user.id = token.id,
-                session.user.email = token.email,
-                session.user.name = token.name,
-                session.user.image = token.picture
+            if(dbUser) {
+                session.user.id = dbUser.id,
+                session.user.email = dbUser.email,
+                session.user.name = dbUser.name,
+                session.user.image = dbUser.picture
             }
 
             return session
