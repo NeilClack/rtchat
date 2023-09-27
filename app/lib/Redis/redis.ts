@@ -6,7 +6,6 @@ type Command = 'zrange' | 'sismember' | 'get' | 'smembers'
 export const fetchRedis = async (command: Command, ...args: (string | number)[]) => {
   const commandUrl = `${upstashRedisRestUrl}/${command}/${args.join('/')}`
 
-
   const response = await fetch(
     commandUrl,
     {
@@ -21,5 +20,8 @@ export const fetchRedis = async (command: Command, ...args: (string | number)[])
   }
 
   const data = await response.json()
+
   return data.result
 }
+
+export default fetchRedis

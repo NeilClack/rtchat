@@ -1,18 +1,14 @@
-'use client'
+"use client";
 
-import { FC, ReactNode } from "react";
+import React, { FC, ReactNode } from "react";
 import { Toaster } from "react-hot-toast";
+import { SessionProvider } from "next-auth/react";
 
-interface ProvidersProps {
-  children: ReactNode
+export default function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <SessionProvider>
+      <Toaster position="top-center" reverseOrder={false} />
+      {children}
+    </SessionProvider>
+  );
 }
-
-const Providers: FC<ProvidersProps> = ({ children }) => {
-  return <>
-    <Toaster position="top-center" reverseOrder={false} />
-    {children}
-
-  </>
-}
-
-export default Providers;

@@ -1,16 +1,20 @@
 import { Icon, Icons } from "@/app/components/UI/Icons";
 import { getServerSession } from "next-auth";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import { ReactNode } from "react";
 import Image from "next/image";
+import SignOutButton from "@/app/components/UI/SignOutButton";
+import authOptions from "@/app/lib/auth";
 
 interface LayoutProps {
   children: ReactNode;
 }
 
 export const DashboardLayout = async ({ children }: LayoutProps) => {
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
+
+  console.log(`Server session: ${JSON.stringify(session)}`);
 
   interface SidebarOption {
     id: number;
@@ -28,7 +32,10 @@ export const DashboardLayout = async ({ children }: LayoutProps) => {
     },
   ];
 
-  if (!session) notFound();
+  if (!session) redirect("/login");
+  if (session) {
+    console.log(`Session data: \n${session.user.email}`);
+  }
 
   return (
     <div className="w-full flex h-screen">
@@ -85,6 +92,7 @@ export const DashboardLayout = async ({ children }: LayoutProps) => {
                   </span>
                 </div>
               </div>
+              <SignOutButton className="h-full aspect-square" />
             </li>
           </ul>
         </nav>
