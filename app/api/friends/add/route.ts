@@ -43,7 +43,7 @@ export async function POST(req: Request) {
     )) as 0 | 1
 
     if (isAlreadyAdded) {
-      return new Response('Already added this user', { status: 400 })
+      return new Response('Request already sent to this user', { status: 400 })
     }
 
     // check if user is already added
