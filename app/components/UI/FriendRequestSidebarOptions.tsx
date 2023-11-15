@@ -1,8 +1,10 @@
 "use client";
 
+import { pusherClient } from "@/app/lib/pusher";
+import { toPusherKey } from "@/app/lib/utils";
 import { User } from "lucide-react";
 import Link from "next/link";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 interface FriendRequestSidebarOptionsProps {
   sessionId: string;
@@ -16,6 +18,22 @@ const FriendRequestSidebarOptions: FC<FriendRequestSidebarOptionsProps> = ({
   const [unseenRequestCount, setUnseenRequestCount] = useState<number>(
     initialUnseenRequestCount
   );
+
+  useEffect(() => {
+    pusherClient.subscribe(
+      toPusherKey(`user:${sessionId}:incoming_friend_requests`)
+    );
+
+    // Would be better to use the actual number here, otherwise a bug is introduced.
+    // If the request reciever has not refreshed, then this number might not match the actual request count.
+    // This should only happen if a request is deleted from the database, however, that might be a future feature for friend requests to be withdrawn.
+    // Also once a request has been responded to, the count does not update.
+    const friendRequestHandler = () => {
+      setUnseenRequestCount((prev) => prev + 1);
+    };
+
+    pusherClient.bind("incoming_friend_requests", friendRequestHandler);
+  });
 
   return (
     <Link

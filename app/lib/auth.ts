@@ -8,7 +8,7 @@ import { Adapter } from "next-auth/adapters"
 const authOptions: NextAuthOptions = {
     adapter: UpstashRedisAdapter(db) as Adapter,
     session: {
-        strategy: "database",
+        strategy: "jwt",
     },
     providers: [
         GoogleProvider({
@@ -20,28 +20,37 @@ const authOptions: NextAuthOptions = {
         signIn: "/login"
     },
     callbacks: {
-        async session({ session, user }){
+        async jwt({token, user}) {
+            const dbUser = (await fetchRedis(`get`, `user:${token.id}`)) as string | null
 
-            const dbUserResult = (await fetchRedis('get', `user:${user.id}`)) as string | null
-
-            if(!dbUserResult){
-                if(user){
-                    session.user.id = user!.id
+            if(!dbUser) {
+                if(user) {
+                    token.id = user!.id
                 }
-            }
-            
-            const dbUser = dbUserResult ? JSON.parse(dbUserResult) : null
-            
-            if(dbUser) {
-                session.user.id = dbUser.id,
-                session.user.email = dbUser.email,
-                session.user.name = dbUser.name,
-                session.user.image = dbUser.picture
+                return token
             }
 
-            return session
+            const dbUserParsed = JSON.parse(dbUser);
+
+            return {
+                id: dbUserParsed.id,
+                name: dbUserParsed.name,
+                email: dbUserParsed.email,  
+                image: dbUserParsed.image,
+            }
         },
-        redirect() {
+        async session({session, token}) {
+
+            if (token) {
+                session.user.id = token.id;
+                session.user.name = token.name;
+                session.user.email = token.email;
+                session.user.image = token.image as string;
+            }
+
+            return session;
+        },
+        redirect(){
             return '/dashboard'
         }
     }

@@ -4,6 +4,7 @@ import { db } from "@/app/lib/db";
 import { getServerSession } from "next-auth";
 import { nanoid } from "nanoid";
 import { messageValidator } from "@/app/lib/validations/message";
+import { pusherServer } from "@/app/lib/pusher";
 
 export async function POST(req: Request) {
     try {
@@ -35,6 +36,9 @@ export async function POST(req: Request) {
             timestamp: Date.now(),
         };
         const message = messageValidator.parse(messageData);
+
+        // Notify all connected chat room clients
+        pusherServer.trigger(`chat-${chatId}`, 'new-message', message);
 
         await db.zadd(`chat:${chatId}:messages`, {
             score: messageData.timestamp,
