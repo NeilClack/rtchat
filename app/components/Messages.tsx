@@ -30,17 +30,18 @@ const Messages: FC<MessagesProps> = ({
   useEffect(() => {
     pusherClient.subscribe(toPusherKey(`chat:${chatId}`));
 
-    const newMessageHandler = (message: Message) => {
+    const messageHandler = (message: Message) => {
+      console.log(`New message: ${message}`);
       setMessages((prev) => [message, ...prev]);
     };
 
-    pusherClient.bind("incoming-message", newMessageHandler);
+    pusherClient.bind("incoming-message", messageHandler);
 
-    return (
-      pusherClient.unbind("incoming-message", newMessageHandler),
+    return () => (
+      pusherClient.unbind("incoming-message", messageHandler),
       pusherClient.unsubscribe(toPusherKey(`chat:${chatId}`))
     );
-  }, []);
+  }, [chatId]);
 
   return (
     <div
