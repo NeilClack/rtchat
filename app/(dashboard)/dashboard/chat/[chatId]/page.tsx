@@ -22,6 +22,8 @@ const getChatPartner = async (chatPartnerId: string) => {
       "get",
       `user:${chatPartnerId}`
     )) as string;
+    // Parsing the response from a string to an object
+    // I initially forgot to due this, causing headaches across the entire chat page.
     const chatPartner = JSON.parse(dbChatPartner);
     return chatPartner;
   } catch (error) {
