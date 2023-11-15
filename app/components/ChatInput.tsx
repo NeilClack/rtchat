@@ -17,6 +17,7 @@ const ChatInput: FC<ChatInputProps> = ({ chatId, chatPartner }) => {
 
   const sendMessage = async () => {
     setIsLoading(true);
+    if (!input || input.replace(/\s/g, "") === "") return;
     try {
       await axios.post("/api/messages/send", { text: input, chatId: chatId });
       setInput("");
