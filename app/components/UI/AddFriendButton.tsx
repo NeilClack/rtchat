@@ -56,9 +56,6 @@ const AddFriendButton: FC<AddFriendButtonProps> = () => {
         className="block text-sm font-medium leading-6 text-gray-900"
       >
         Add friend by email{" "}
-        <sub>
-          <i>currently case sensitive</i>
-        </sub>
       </label>
       <div className="mt-2 flex gap-4">
         <input
