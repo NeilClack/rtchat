@@ -18,11 +18,11 @@ interface PageProps {
 
 const getChatPartner = async (chatPartnerId: string) => {
   try {
-    const chatPartner = (await fetchRedis(
+    const dbChatPartner = (await fetchRedis(
       "get",
       `user:${chatPartnerId}`
-    )) as User;
-
+    )) as string;
+    const chatPartner = JSON.parse(dbChatPartner);
     return chatPartner;
   } catch (error) {
     console.log(error);
@@ -62,22 +62,23 @@ const page: FC<PageProps> = async ({ params }) => {
   const chatPartnerId = user.id === userId1 ? userId2 : userId1;
 
   // Checks
-  // is there a session?
+  // is there a session
   if (!session) {
     return notFound();
   }
 
-  // is the user part of the chatId?
+  // is the user part of the chatId
   if (user.id !== userId1 && user.id !== userId2) {
     return notFound();
   }
 
-  // is there a chatPartner?
-  const chatPartner = await getChatPartner(chatPartnerId);
-
+  // is there a chatPartner
+  // This gets the chatPartner, but returns as a string...
+  // Strings don't have methods or properties, so we need to cast it as a User
+  // but this isn't working, and everything shows as undefined
+  // This was because the getChatPartner was returning a string, not a user object...
+  const chatPartner = (await getChatPartner(chatPartnerId)) as User;
   const initialMessages = await getChatMessages(chatId);
-
-  console.log(`User Image: ${session.user.image}`);
 
   if (!chatPartner) {
     return notFound();
@@ -110,8 +111,8 @@ const page: FC<PageProps> = async ({ params }) => {
       <Messages
         initialMessages={initialMessages}
         sessionId={session.user.id}
-        chatPartner={chatPartner}
         sessionImg={session.user.image}
+        chatPartner={chatPartner}
         chatId={chatId}
       />
       <ChatInput chatPartner={chatPartner} chatId={chatId} />
