@@ -99,7 +99,7 @@ export const DashboardLayout = async ({ children }: LayoutProps) => {
                     fill
                     referrerPolicy="no-referrer"
                     className="rounded-full"
-                    src={session.user.image || ""}
+                    src={session.user.image!}
                     alt="Your profile picture"
                   />
                 </div>
