@@ -61,7 +61,7 @@ const FriendRequests: FC<FriendRequestsProps> = ({
       );
       pusherClient.unbind("incoming_friend_requests", friendRequestHandler);
     };
-  }, []);
+  }, [sessionId]);
 
   return (
     <>
