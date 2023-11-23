@@ -1,17 +1,66 @@
 "use client";
 import { usePathname, useRouter } from "next/navigation";
 import { FC, useEffect, useState } from "react";
-import { chatHrefConstructor } from "../lib/utils";
+import { chatHrefConstructor, toPusherKey } from "../lib/utils";
+import { pusherClient } from "../lib/pusher";
+import toast from "react-hot-toast";
+import UnseenChatToast from "./UI/UnseenChatToast";
 
 interface ChatListProps {
   friends: User[];
   sessionId: string;
 }
 
+interface ExtendedMessage extends Message {
+  senderId: string;
+  senderImg: string;
+  senderName: string;
+}
+
 const ChatList: FC<ChatListProps> = ({ sessionId, friends }) => {
   const router = useRouter();
   const pathname = usePathname();
   const [unseenMessages, setUnseenMessages] = useState<Message[]>([]);
+  const [activeChats, setActiveChats] = useState<User[]>(friends);
+
+  useEffect(() => {
+    pusherClient.subscribe(toPusherKey(`user:${sessionId}:chats`));
+    pusherClient.subscribe(toPusherKey(`user:${sessionId}:friends`));
+
+    const chatHandler = (message: ExtendedMessage) => {
+      const shouldNotify =
+        pathname !==
+        `/dashboard/chat/${chatHrefConstructor(sessionId, message.senderId)}`;
+
+      if (!shouldNotify) return;
+
+      toast.custom((t) => (
+        <UnseenChatToast
+          t={t}
+          sessionId={sessionId}
+          senderId={message.senderId}
+          senderImg={message.senderImg}
+          senderName={message.senderName}
+          senderMessage={message.text}
+        />
+      ));
+
+      setUnseenMessages((prev) => [...prev, message]);
+    };
+
+    const friendHandler = (newFriend: User) => {
+      setActiveChats((prev) => [...prev, newFriend]);
+    };
+
+    pusherClient.bind("new_message", chatHandler);
+    pusherClient.bind("new_friend", friendHandler);
+
+    return () => {
+      pusherClient.unsubscribe(toPusherKey(`user:${sessionId}:chats`));
+      pusherClient.unsubscribe(toPusherKey(`user:${sessionId}:friends`));
+    };
+  }),
+    [sessionId, pathname, router];
 
   useEffect(() => {
     if (pathname?.includes("chat")) {
